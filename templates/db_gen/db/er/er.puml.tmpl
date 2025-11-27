@@ -1,0 +1,49 @@
+@startuml
+
+!include custom_er_style.puml
+ER_COMMENT(自動生成)
+
+{{- range . }}
+  {{- template "er_full.puml.entity" . }}
+{{- end -}}
+
+{{- range . }}
+  {{- template "er_full.puml.relation" . }}
+{{- end }}
+
+@enduml
+
+{{- define "er_full.puml.entity" }}
+  {{- if .IsMaster }}
+  MASTER_ENTITY({{.Name}}, {{.Description}})
+  {{- else if .IsUser }}
+  INFORMATION_ENTITY({{.Name}}, {{.Description}}, user)
+  {{- else }}
+  GENERAL_ENTITY({{.Name}}, {{.Description}})
+  {{- end -}}
+   {
+      {{- range .PrimaryKeys }}
+      + {{ .Type }} {{ .Name }} : -- {{ .Description }}
+      {{- end }}
+      --
+      {{- range .ColumnsWithoutPrimaryKeys }}
+      {{ .Type }}{{- if .IsNullable -}}(nullable){{ end }} {{ .Name }} : -- {{ .Description }}
+      {{- end }}
+  }
+  {{ if .Comment -}}
+  START_DESCRIPTION(bottom)
+  {{ .Comment }}
+  END_DESCRIPTION
+  {{ end }}
+  {{- if .Todo -}}
+  START_TODO(bottom)
+  {{ .Todo }}
+  END_TODO
+  {{ end }}
+{{- end }}
+
+{{- define "er_full.puml.relation" }}
+  {{- range .Relations }}
+  RELATION({{.Source.TableName}}, {{.RelString}}, {{.Target.TableName}}, {{.Source.Column}}, {{.Target.Column}})
+  {{- end }}
+{{- end }}
